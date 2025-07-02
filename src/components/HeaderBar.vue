@@ -1,34 +1,51 @@
+headerbar
+
 <template>
   <header class="top-bar">
     <div class="logo">
       <img :src="Logo" alt="Logo" class="logo-img" />
       <router-link to="/" class="logo-text">HotelBooking</router-link>
     </div>
-     <div class="right-buttons">
-          <template v-if="user">
-            <img 
-              v-if="user.photo"
-              :src="user.photo" 
-              class="profile-img" 
-            />
-            <span v-if="user">Merhaba, {{ user.name }}</span>
-            <button @click="logoutUser" class="btn btn-outline">Çıkış Yap</button>
-          </template>
 
-          <template v-else>
-            <router-link to="/login" class="btn btn-outline" :exact="true">Giriş Yap</router-link>
-            <router-link to="/register" class="btn btn-outline">Kayıt Ol</router-link>
-          </template>
-        </div>
+    <div class="right-buttons">
+      <!-- Kullanıcı Girişi kısmı -->
+      <template v-if="user">
+        <img v-if="user.photo" :src="user.photo" class="profile-img" />
+        <span v-if="user">{{ welcomeText }}, {{ user.name }}</span>
+        <button @click="logoutUser" class="btn btn-outline">{{ logoutText }}</button>
+      </template>
+      <template v-else>
+        <router-link to="/login" class="btn btn-outline" :exact="true">{{ loginText }}</router-link>
+        <router-link to="/register" class="btn btn-outline">{{ registerText }}</router-link>
+        <!-- Dil değiştirme butonları -->
+      <button class="btn btn-outline" @click="changeLang('tr')" :disabled="lang==='tr'">TR</button>
+      <button class="btn btn-outline" @click="changeLang('en')" :disabled="lang==='en'">EN</button>
+      </template>
+    </div>
   </header>
 </template>
+
 
 <script setup>
 import Logo from '@/assets/HotelBookingLogo.png'
 import { user } from '@/stores/user'
 import { useRouter } from 'vue-router'
+import { useLangStore } from '@/stores/langstore'
+import { computed } from 'vue'
 
 const router = useRouter()
+const langStore = useLangStore()
+
+const lang = computed(() => langStore.lang)
+
+function changeLang(newLang) {
+  langStore.setLang(newLang)
+}
+
+const welcomeText = computed(() => lang.value === 'tr' ? 'Merhaba' : 'Welcome')
+const logoutText = computed(() => lang.value === 'tr' ? 'Çıkış Yap' : 'Logout')
+const loginText = computed(() => lang.value === 'tr' ? 'Giriş Yap' : 'Login')
+const registerText = computed(() => lang.value === 'tr' ? 'Kayıt Ol' : 'Register')
 
 function logoutUser() {
   localStorage.removeItem('user')

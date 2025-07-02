@@ -3,7 +3,7 @@
     <!-- MAP SIDE -->
     <div class="map-container">
   <button class="map-toggle" @click="showMap = !showMap">
-    {{ showMap ? 'Haritayı Gizle' : 'Haritada Göster' }}
+     {{ showMap ? t('hideMap') : t('showMap') }}
   </button>
 
   <div v-if="showMap" class="map-wrapper">
@@ -16,9 +16,13 @@
       <!-- Search Bar -->
       <form class="search-bar" @submit.prevent="searchHotels">
         <div class="search-field">
-          <label>📍</label>
-          <input type="text" v-model="city" placeholder="Nereye?" />
-        </div>
+        <label>📍</label>
+        <input
+          type="text"
+          v-model="city"
+          :placeholder="t('where')"
+        />
+      </div>
         <div class="search-field">
           <label>📅</label>
           <input type="date" v-model="checkIn" />
@@ -29,9 +33,11 @@
         </div>
         <div class="search-field">
           <label>👤</label>
-          <input type="number" v-model="guestCount" min="1" placeholder="Misafir sayısı" />
+          <input type="number" v-model="guestCount" min="1"  :placeholder="t('guests')" />
         </div>
-        <button type="submit" class="btn btn-outline">🔍 Ara</button>
+        <button type="submit" class="btn btn-outline">
+        {{ t('search') }}
+      </button>
       </form>
 
       <div v-if="hotels.length">
@@ -66,7 +72,7 @@
           <span>{{ hotel.rating.toFixed(1) }}</span>
           <p>
             <strong>{{ ratingInfo(hotel.rating).text }}</strong><br />
-            {{ hotel.comment_count }} yorum
+            {{ hotel.num_comments }} yorum
           </p>
         </div>
 
@@ -80,7 +86,7 @@
           </div>
 
           <div v-else-if="!user && hotel.flagged">
-            <span class="member-price-msg">Üye fiyatı için giriş yapın</span><br />
+            <span class="member-price-msg">{{ t('memberPrice') }}<br /></span>
             <span class="actual-price">
               {{ (hotel.price + hotel.price * hotel.discount / 100).toFixed(0) }} TL
             </span>
@@ -90,7 +96,7 @@
             <span class="actual-price">{{ hotel.price.toFixed(0) }} TL</span>
           </div>
 
-          <small>1 gece için vergiler dahil</small>
+          <small>{{ t('perNight') }}</small>
         </div>
       </div>
     </div>
@@ -98,7 +104,7 @@
 </div>
 
       <div v-else>
-        <p>Gösterilecek otel bulunamadı.</p>
+        <p>{{ t('noHotels') }}</p>
       </div>
     </div>
   </div>
@@ -106,8 +112,16 @@
 
 <script setup>
 import HotelMap from './HotelMap.vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted} from 'vue'
 import { user } from '../stores/user'
+import { useLangStore } from '@/stores/langstore'
+import { translations } from '@/i18n/translations'
+
+const langStore = useLangStore()
+const t = (key) => {
+  const currentLang = langStore.lang
+  return translations[currentLang][key] || key
+}
 
 const showMap = ref(false)
 const city = ref('')
@@ -137,7 +151,6 @@ function ratingInfo(score) {
   if (score >= 6) return { text: "İyi", class: "rating-iyi" }
   return { text: "Fena değil", class: "rating-fena" }
 }
-
 
 function loadAllHotels() {
   fetch('http://localhost:5000/hotels')
